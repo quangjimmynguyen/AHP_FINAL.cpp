@@ -1,347 +1,296 @@
+/**
+       786
+Name: Mohd. Raihan Uddin
+International Islamic University of Chittagong
+Algorithm: TOPSIS (Multi Criteria Decision Making (MCDM) ) Based on mobile
+github_link: github.com/raihan02
+**/
 #include <bits/stdc++.h>
 using namespace std;
-string factor[11], alternate[11];
-vector <double> vp, vk, vt;
-double lemda, CR, CI;
-double RI[11] = {0.0, 0.0, 0.58, 0.9, 1.12, 1.24, 1.32,  1.41,  1.45, 1.49};
-vector <double> level[100];
-void load (int n)
+map <string, int> look;
+string alternative[100], attribute[100];
+map <string, int> mp;
+int alt, atr;
+double A[105][105], A_norm[105][105];
+vector <double> vv[100];
+double w[100];
+vector <double> sj_plus, sj_minus , nor, best, worst, summ, p;
+map <int, string> m;
+void show ()
 {
-    printf("The Factors are:\n\n");
-
-    for(int i = 0; i < n; i++)
+    printf("\n\nThe Attributes Matrix are:\n");
+    for(int i = 1; i <= alt; i++)
     {
-        getline(cin, factor[i]);
-    }
-}
-double mat[100][100];
-double p_vector[100][100], A_prime[100][100];
-void compo (int n)
-{
-    for(int i = 0; i < n; i++)
-    {
-        for(int j = 0; j < n; j++)
+        for(int j =1; j <= atr; j++)
         {
-            mat[i][j] = 0;
+            printf("%5.0lf ", A[i][j]);
+        }
+        printf("\n");
+    }
+    printf("Weighted value:\n");
+    for(int i = 1; i <= atr; i++)
+        printf("%.2lf ", w[i]);
+    cout<< endl;
+}
+void normalization()
+{
+    double res =  0.00, sum = 0;
+
+    nor.push_back(0.0);
+    for(int i = 1; i <= atr; i++)
+    {
+        res = 0.00;
+        for(int j = 1; j <= alt; j++)
+        {
+            res +=  A[j][i] * A[j][i];
+        }
+
+        nor.push_back(sqrt(res));
+    }
+    //cout<< endl;
+    for(int i = 1; i <= atr; i++)
+    {
+       // cout<<nor[i] << " ";
+        for(int j = 1; j <= alt; j++)
+        {
+            //cout<< A[j][i] << " " ;
+
+            A_norm[j][i] = A[j][i] / nor[i];
+        }
+        //cout<< endl;
+    }
+    /*
+    printf("Normalize Matrix\n\n");
+    for(int i = 1; i <= alt; i++)
+    {
+        for(int j = 1; j <= atr;j++)
+        {
+            printf("%5.3lf ", A_norm[i][j]);
+        }
+        printf("\n");
+    }*/
+
+}
+void weighted_normalize()
+{
+    for(int i = 1; i <= atr; i++)
+    {
+        for(int j = 1; j <= alt; j++ )
+        {
+            A_norm[j][i] *= w[i];
         }
     }
-    double scale;
-    for(int i = 0; i < n; i++)
+    /*
+    printf("Weighted normalize Matrix\n\n");
+    for(int i = 1; i <= alt; i++)
     {
-        for(int j = i; j < n; j++)
+        for(int j = 1; j <= atr;j++)
         {
-            if(i == j)
+            printf("%5.4lf ", A_norm[i][j]);
+        }
+        printf("\n");
+    }
+    */
+}
+map <string, double> B,W;
+vector <pair <double, int > > vvv, vkb;
+void best_worst()
+{
+   best.push_back(0.0);
+   worst.push_back(0.0);
+    for(int i = 1; i <= atr; i++)
+    {
+        double mn = 9999999.0, mx = 0.0, mn1 = 9999999.0, mx1 = 0;
+        bool f = 0;
+        for(int j = 1; j <= alt; j++)
+        {
+            if(m[i] == "Price or cost")
             {
-                scale = 1.0;
+                f = 1;
+                if(mn> A_norm[j][i])
+                    mn = A_norm[j][i];
+                if(mx1 < A_norm[j][i])
+                    mx1 = A_norm[j][i];
+
             }
             else
             {
-                cout<< "For " << factor[i] << " to  " << factor[j] <<":";
-
-                printf("\n9 7 5 7 3 1 3 5 7 9\n");
-                cin >> scale;
+                if(mx < A_norm[j][i])
+                {
+                    mx = A_norm[j][i];
+                }
+                if(mn1 > A_norm[j][i])
+                    mn1 = A_norm[j][i];
             }
-            mat[i][j] = scale;
-            mat[j][i] = (1.0/ scale);
+        }
+        if(f){
+            worst.push_back(mx1);
+            best.push_back(mn);
+        }
+        else{
+            worst.push_back(mn1);
+            best.push_back(mx);
         }
     }
-}
-void priority_vector (int n)
-{
-    double sum  = 0.0;
-
-    for(int i = 0; i < n; i++)
-    {
-        sum = 0.0;
-        for(int j = 0; j < n; j++)
-        {
-            p_vector[i][j] = mat[i][j];
-            sum += mat[j][i];
-        }
-
-        vp.push_back(sum);
-    }
-
-    for(int i = 0; i < vp.size(); i++)
-    {
-        p_vector[n][i] = vp[i];
-    }
-    /// Priority Matrix print
-    /*
-     printf("Priority Vector:\n");
-     for(int i = 0; i <= n; i++)
-     {
-         for(int j = 0; j < n; j++)
-         {
-             cout<< p_vector[i][j] <<" ";
-         }
-         cout<< endl;
-     }*/
+    cout<< endl;
+    //for(int i = 1; i < best.size(); i++)
+        //cout<< best[i] <<" " << worst[i] << endl;
 }
 
-void A_vector(int n)
+void euclid_distance_formula()
 {
-    for(int i = 0; i < n; i++)
+    double res = 0.0, sum = 0.0;
+    sj_plus.push_back(0.0);
+    sj_minus.push_back(0.0);
+    summ.push_back(0.0);
+    for(int i = 1; i <= alt; i++)
     {
-        for(int j = 0; j < n; j++)
+        res = 0.00;
+         sum = 0.0;
+        for(int j = 1; j <= atr; j++)
         {
-            A_prime[i][j] = mat[i][j];
+            res += pow((A_norm[i][j] - best[j]), 2);
+            sum += pow((A_norm[i][j] - worst[j]), 2);
+            //cout<<A_norm[i][j] << " ";
         }
+       // cout<< endl;
+        sj_plus.push_back(sqrt(res));
+        sj_minus.push_back(sqrt(sum));
+        summ.push_back(sqrt(res) + sqrt(sum));
     }
 
-    for(int i = 0; i < n; i++)
-    {
-        for(int j = 0; j < n; j++)
-        {
-            A_prime[j][i] = (A_prime[j][i] / vp[i]);
-        }
-    }
-
-    for(int i = 0; i < n; i++)
-    {
-        double sum = 0.0;
-        for(int j = 0; j < n; j++)
-        {
-            ///cout<< A_prime[i][j] << " ";
-            sum += A_prime[i][j];
-        }
-        vk.push_back(sum);
-
-    }
-
-    for(int i = 0; i < vk.size(); i++)
-    {
-        vt.push_back((double)(1/(double)n) * vk[i]);
-    }
-
-    /// Priority vector or W
     /*
-    for(int i = 0; i < vt.size(); i++)
+    for(int i = 1; i < sj_plus.size(); i++)
     {
-        cout<< vt[i] << endl;
+        cout<< sj_plus[i] << " " << sj_minus[i] << endl;
+    }
+    */
+}
+void performance()
+{
+    double ans = 0.00;
+     p.push_back(0.0);
+    for(int i = 1; i < summ.size(); i++)
+    {
+        ans = sj_minus[i] / (sj_minus[i] + sj_plus[i]);
+        p.push_back(ans);
+    }
+     /*
+    for(int i = 1; i < p.size(); i++)
+    {
+        cout<<p[i] << endl;
     }
     */
 
 }
-void display(int n)
+void rank_clc ()
 {
-    for(int i = 1; i <= 20; i++)
-        printf("-");
-    printf("\n");
-    for(int i = 0; i < n; i++)
-    {
-        for(int j = 0; j < n; j++)
-        {
-            // cout<<setw(10)<< mat[i][j] << " ";
-        }
-        //cout<< endl;
-    }
-
-    double arr[100][100] = {0};
-
-    for(int i = 0; i < n; i++)
-    {
-        for(int j = 0; j < n; j++)
-        {
-            arr[j][i] = vt[i] * mat[j][i];
-        }
-    }
-
-    for(int i = 1; i <= 20; i++)
-        printf("-");
-    printf("\n");
-    for(int i = 0; i < n; i++)
-    {
-        for(int j = 0; j < n; j++)
-        {
-            //cout<<setw(10)<< arr[i][j] << " ";
-        }
-        //cout<< endl;
-    }
-    vector <double> ws,wa;
-
-    for(int i = 0; i < n; i++)
-    {
-        double sum = 0.00;
-        for(int j = 0; j < n; j++)
-        {
-            sum += arr[i][j];
-        }
-        ws.push_back(sum);
-    }
-
-    for(int i = 0; i < ws.size(); i++)
-    {
-        // cout<< ws[i] << endl;
-        wa.push_back(ws[i]/vt[i]);
-    }
-
-    //printf("___________\n");
-    double sum = 0.0;
-    for(int i = 0; i < wa.size(); i++)
-    {
-        //cout<< wa[i] << endl;
-        //wa.push_back(vt[i]/wa[i]);
-        sum += wa[i];
-    }
-    double lemda = sum/ n;
-
-
-
-    double a,b,c,d, CI;
-    a = lemda - n;
-
-    CI =  a/(n-1);
-
-
-    double CR = CI / RI[n-1];
-    cout<<"Lemda Max = " <<  lemda << endl;
-    cout<<"CI = " << CI << endl;
-    cout<<"CR = " << CR << endl;
-    cout<<"Priority Vector " << endl;
-    printf("----------------\n");
-    for(int i = 0; i < vt.size(); i++)
-    {
-        cout<< vt[i] << endl;
-    }
-    if(CR > 0.1)
-        cout<<"Try Again" << endl;
-    else
-    {
-        cout<<"Accepted" << endl;
-        cout<< endl;
-
-    }
-    wa.clear();
-    ws.clear();
-
-
-
+    vvv.push_back(make_pair(0.00, 0));
+   for(int i = 1; i < p.size(); i++)
+   {
+       vvv.push_back(make_pair(p[i], i));
+   }
+   /*
+   for(int i = 1; i < vvv.size(); i++)
+   {
+       cout<<vvv[i].first << " " << vvv[i].second << endl;
+   }
+   */
 }
 
-void lemda_max (int n)
+void show_final_Result ()
 {
-    lemda = 0.0;
-    for(int i = 0; i < vp.size(); i++)
-    {
-        //cout<< vp[i] << " " << vt[i] << endl;
-        lemda += (vp[i] * vt[i]);
-    }
-    /// lemda_max count
-    /*
-     cout<< lemda << endl;
-     */
-}
-void consistaency_ration(int n)
-{
-    CI = (lemda - n) / (n - 1);
-    CR = CI / RI[n - 1];
+    sort(vvv.begin(), vvv.end());
 
+    reverse(vvv.begin(), vvv.end());
 
-}
-void clear(int n)
-{
-    for(int i = 0; i <= n; i++)
+    printf("\n\n\nFinal Ranking:\n\n");
+
+    for(int i = 0; i < vvv.size()-1; i++)
     {
-        for(int j = 0; j <= n; j++)
-        {
-            A_prime[i][j] = 0.0;
-            p_vector[i][j] = 0.0;
-            mat[i][j] = 0.0;
-        }
-        factor[i].clear();
+        ///cout<<vvv[i].first << " " << vvv[i].second << endl;
+        cout<<"Rank " << i+1 << " = " <<alternative[vvv[i].second] << " , Performance = " <<vvv[i].first << endl<< endl;
     }
-    CR = 0.0;
-    CI = 0.0;
-    lemda = 0.0;
-    vt.clear();
-    vp.clear();
-    vk.clear();
-}
-void ff(int x)
-{
-    level[x].push_back(CR);
-    for(int i = 0; i < vt.size(); i++)
-    {
-        level[x].push_back(vt[i]);
-    }
-}
-void checking (int n)
-{
-    if(CR < 0.1)
-    {
-        printf("Accepted\n");
-    }
-    else
-    {
-        printf("Try Again\n");
-    }
-    cout<<"CR " <<CR << endl; //end;
-    cout<<"Lemda Max " << lemda << endl;
-    cout<<"Priority Vector " << endl;
-    printf("----------------\n");
-    for(int i = 0; i < vt.size(); i++)
-    {
-        cout<< vt[i] << endl;
-    }
+
 }
 int main()
 {
-    int n;
-    printf("Enter the dimension and factor\n\n");
 
-    cin >> n;
-    clear(n);
-
+    look["Excellent"] = 5;
+    look["Average"] = 3;
+    look["Good"] = 4;
+    look["Low"] =1;
+    look["Below_Average"]= 2;
+    printf("Enter the number of alternative:\n");
+    cin >> alt;
+    printf("Enter the number of Attribute\n");
+    cin >> atr;
+    printf("Alternatives are:\n");
     getchar();
-    load(n);
-    for(int i = 0; i < n; i++)
-        alternate[i] = factor[i];
-    compo(n);
-    //display(n);
-    priority_vector(n);
-    A_vector(n);
-    lemda_max(n);
-    consistaency_ration(n);
-
-    //checking(n);
-    display(n);
-    int x = 1;
-    //check(n);
-    ff(x);
-    for(int i = 0; i < n; i++)
+    for(int i = 1; i <= alt; i++)
     {
-        //cout<<"Consider " << alternate[i] << ": ";
-        int p;
-        cout<<"How Many Factors for " << alternate[i] << endl;
-        cin >> p;
-        clear(p);
-        getchar();
-        load(p);
-        compo(p);
-        //display(n);
-        priority_vector(p);
-        A_vector(p);
-        lemda_max(p);
-        consistaency_ration(p);
-        // checking(p);
-        display(p);
-        ff(x + 1);
+        printf("Enter %d alternative:\n",i);
+        string s;
+        getline(cin, s);
+        alternative[i] = s;
 
     }
+    printf("Attributes are:\n");
+    //getchar();
+    for(int i = 1; i <= atr; i++)
+    {
+        printf("Enter %d alternative:",i);
+        getline(cin , attribute[i]);
+         m[i] = attribute[i];
+        w[i] = 1.0/ (double)atr;
+    }
+    for(int i = 1; i <= alt; i++)
+    {
+          cout<<"Enter Attribute for " << alternative[i] << ":\n";
+          for(int j = 1; j <= atr; j++)
+          {
+                cout<<"For " << attribute[j] << " = ";
+                if(attribute[j] == "Looks")
+                {
+                    string s;
+                    cin >> s;
+                    A[i][j] = look[s];
+                }
+                else
+                {
+                    int x;
+                    cin >> x;
+                    A[i][j] = x;
+                }
+          }
+    }
+    //show();
+    normalization();
+    weighted_normalize();
+    best_worst();
+    euclid_distance_formula();
+    performance();
+    rank_clc();
+    show_final_Result();
 
+    printf("Alhamdulillah\n\n");
 
 }
 /*
-4
-a
-b
-c
-d
 5
 4
-7
-0.5
-3
-3
+mobile1
+mobile2
+mobile3
+mobile4
+mobile5
+Price or cost
+Storage space
+Camera
+Looks
+250 16 12 Excellent
+200 16 8 Average
+300 32 16 Good
+275 32 8 Good
+225 16 16 Below_Average
 */
