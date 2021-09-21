@@ -1,3 +1,9 @@
+/**
+Name: Quang Nguyen Minh
+Vietnamese German University
+Algorithm: Based on mobile
+**/
+
 #include <bits/stdc++.h>
 using namespace std;
 string factor[11], alternate[11];
