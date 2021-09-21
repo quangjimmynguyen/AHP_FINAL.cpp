@@ -271,7 +271,7 @@ int main()
     rank_clc();
     show_final_Result();
 
-    printf("Alhamdulillah\n\n");
+    printf("congratulations\n\n");
 
 }
 /*
