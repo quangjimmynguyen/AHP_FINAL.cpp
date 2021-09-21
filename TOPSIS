@@ -1,9 +1,7 @@
 /**
-       786
-Name: Mohd. Raihan Uddin
-International Islamic University of Chittagong
+Name: Quang Nguyen Minh
+Vietnamese German University
 Algorithm: TOPSIS (Multi Criteria Decision Making (MCDM) ) Based on mobile
-github_link: github.com/raihan02
 **/
 #include <bits/stdc++.h>
 using namespace std;
